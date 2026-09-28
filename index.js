@@ -2,47 +2,67 @@ var LARP_UI_TAG = "v11.1.5";
 
 var React = vendetta.metro.common.React;
 var RN = vendetta.metro.common.ReactNative;
+var View = RN.View;
+var Text = RN.Text;
+var TextInput = RN.TextInput;
+var ScrollView = RN.ScrollView;
+var Pressable = RN.Pressable || RN.TouchableOpacity;
 
-  var LARP_UI_TAG = "v11.1.5";
+var findByStoreName = vendetta.metro.findByStoreName;
+var findByName = vendetta.metro.findByName;
+var findByProps = vendetta.metro.findByProps;
+var after = vendetta.patcher.after;
+var showToast = vendetta.ui.toasts.showToast;
+var getAssetIDByName = vendetta.ui.assets.getAssetIDByName;
 
-  var React = vendetta.metro.common.React;
-  var RN = vendetta.metro.common.ReactNative;
-  var View = RN.View;
-  var Text = RN.Text;
-  var TextInput = RN.TextInput;
-  var ScrollView = RN.ScrollView;
-  var Pressable = RN.Pressable || RN.TouchableOpacity;
+export const onLoad = () => {
+  try {
+    var storage = vendetta.plugin.storage;
+    if (storage.matchUsername == null) storage.matchUsername = "";
+    if (storage.replaceUsername == null) storage.replaceUsername = "";
+    if (storage.spoofAccountDateIso == null) storage.spoofAccountDateIso = "";
+    if (typeof storage.badges !== "object" || storage.badges === null) {
+      storage.badges = {};
+    }
+    if (typeof storage.hideNative !== "object" || storage.hideNative === null) {
+      storage.hideNative = {};
+    }
+    if (storage.hideNative.quest == null) storage.hideNative.quest = false;
+    if (storage.hideNative.orb == null) storage.hideNative.orb = false;
+    if (storage.hideNative.nitro == null) storage.hideNative.nitro = false;
+    if (storage.hideNative.boost == null) storage.hideNative.boost = false;
+    if (storage.hideNative.orbBalance == null) storage.hideNative.orbBalance = false;
+    if (storage.hideNative.legacyUsername == null) storage.hideNative.legacyUsername = false;
+    if (storage.hideNative.levelLeaf == null) storage.hideNative.levelLeaf = false;
+    if (storage.hideNative.idSubstrings == null) storage.hideNative.idSubstrings = "";
+    if (!Array.isArray(storage.otherProfiles)) storage.otherProfiles = [];
 
-  var findByStoreName = vendetta.metro.findByStoreName;
-  var findByName = vendetta.metro.findByName;
-  var findByProps = vendetta.metro.findByProps;
-  var after = vendetta.patcher.after;
-  var showToast = vendetta.ui.toasts.showToast;
-  var getAssetIDByName = vendetta.ui.assets.getAssetIDByName;
-
-  var storage = vendetta.plugin.storage;
-  if (storage.matchUsername == null) storage.matchUsername = "";
-  if (storage.replaceUsername == null) storage.replaceUsername = "";
-  if (storage.spoofAccountDateIso == null) storage.spoofAccountDateIso = "";
-  if (typeof storage.badges !== "object" || storage.badges === null) {
-    storage.badges = {};
+    larpUnpatchAll();
+    warmLarpIconAssetCache();
+    patchUsername();
+    patchSnowflakeConvertersForAccountDate();
+    patchUserProfileRecordMemberSince();
+    patchBadges();
+    patchBadgeIconsViaJsx();
+  } catch (e) {
+    console.error(e);
   }
-  if (typeof storage.hideNative !== "object" || storage.hideNative === null) {
-    storage.hideNative = {};
+};
+
+export const onUnload = () => {
+  try {
+    larpUnpatchAll();
+  } catch (e) {
+    console.error(e);
   }
-  if (storage.hideNative.quest == null) storage.hideNative.quest = false;
-  if (storage.hideNative.orb == null) storage.hideNative.orb = false;
-  if (storage.hideNative.nitro == null) storage.hideNative.nitro = false;
-  if (storage.hideNative.boost == null) storage.hideNative.boost = false;
-  if (storage.hideNative.orbBalance == null) storage.hideNative.orbBalance = false;
-  if (storage.hideNative.legacyUsername == null) storage.hideNative.legacyUsername = false;
-  if (storage.hideNative.levelLeaf == null) storage.hideNative.levelLeaf = false;
-  if (storage.hideNative.idSubstrings == null) storage.hideNative.idSubstrings = "";
-  if (!Array.isArray(storage.otherProfiles)) storage.otherProfiles = [];
-  var CDN = "https://cdn.discordapp.com/badge-icons";
-  var ICON_EMERALD = "11e2d339068b55d3a506cff34d3780f3";
-  var ICON_RUBY = "cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4";
-  var ICON_OPAL = "5b154df19c53dce2af92c9b61e6be5e2";
+};
+
+var CDN = "https://cdn.discordapp.com/badge-icons";
+var ICON_EMERALD = "11e2d339068b55d3a506cff34d3780f3";
+var ICON_RUBY = "cd5e2cfd9d7f27a8cdcd3e8a8d5dc9f4";
+var ICON_OPAL = "5b154df19c53dce2af92c9b61e6be5e2";
+
+var BADGES = [
 
   var BADGES = [
     { id: "staff",                   label: "Discord Staff",            asset: "StaffBadge",                       url: CDN + "/5e74e9b61934fc1f67c65515d1f7e60d.png" },
