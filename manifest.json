@@ -1,0 +1,7 @@
+{
+  "name": "Larp UI",
+  "description": "Local spoofing and badge customization",
+  "author": "femboynism",
+  "main": "index.js",
+  "version": "11.1.5"
+}
